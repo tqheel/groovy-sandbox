@@ -1,19 +1,29 @@
 #!groovy
 
-def resolveSubJobName(Enum jobTypeToCall, Enum currentJobType) {
+private List<String> resolveSubJobNames(Enum jobTypeToCall, Enum currentJobType) {
     switch (currentJobType) {
-        case PeerJobTypeEnum.WRAPPER:
+        case PeerJobType.WRAPPER:
             switch (jobTypeToCall) {
-                case PeerJobTypeEnum.PEER_FULL_STACK:
-                    return "full-peer-stack-controller"
-                case PeerJobTypeEnum.
-                default: return "not the full peer stack"
+                case PeerJobType.PEER_TWISTLOCK_BUILD: 
+                    return []
+                case PeerJobType.PEER_FULL_STACK:
+                    return ["full-peer-stack-controller"]
+                case PeerJobType.CDN:
+                    return ["Publish_JavaScript","Invalidate-CloudFront-Cache"]
+                case PeerJobType.ECR_STACK_CONTROLLER:
+                    return []
+                case PeerJobType.UPDATE_FARGATE_CLUSTER:
+                    return ["update-fargate-cluster"]
+                case PeerJobType.UPDATE_FARGATE_SERVICE:
+                    return ["update-fargate-service"]
+                
+                default: return []
             }
-        default: return "not the wrapper"
+        default: return []
     }
 }
 
-def resolveFullJobToCallPath(Enum jobTypeToCall, Enum currentJobType, String envType) {
+List<String> resolveFullJobToCallPath(Enum jobTypeToCall, Enum currentJobType, String envType) {
     // def currentJobName = ${env.JOB_NAME}
 
     switch (jobTypeToCall) {
@@ -50,31 +60,42 @@ def resolveFullJobToCallPath(Enum jobTypeToCall, Enum currentJobType, String env
     
 }
 
-enum PeerJobTypeEnum {
+enum PeerJobType {
     WRAPPER,
+    PEER_TWISTLOCK_BUILD,
     PEER_FULL_STACK,    
     CDN,
+    OPS_DEV_ECR_STACK_CONTROLLER,
+    ECR_STACK_CONTROLLER,
     UPDATE_FARGATE_CLUSTER,
     UPDATE_FARGATE_SERVICE,
+    FARGATE_CLUSTER_STACK_CONTROLLER,
+    FARGATE_SERVICE_STACK_CONTROLLER,
     DATABASE_STACK,
     DATABASE_SCHEMA
 }
 
-println(PeerJobTypeEnum.values())
+println(PeerJobType.values())
 
-println(PeerJobTypeEnum.valueOf("CDN").ordinal())
+println(PeerJobType.valueOf("CDN").ordinal())
 
-println("values are equal: ${PeerJobTypeEnum.CDN == 'CDN' as PeerJobTypeEnum}")
+println("values are equal: ${PeerJobType.CDN == 'CDN' as PeerJobType}")
 
 try {
-    println(resolveSubJobName("nuthin" as PeerJobTypeEnum, "sumpin" as PeerJobTypeEnum))
+    println(resolveSubJobNames("nuthin" as PeerJobType, "sumpin" as PeerJobType))
 }
 catch (ex) {
     println(ex.getMessage())
 }
 
-println(resolveSubJobName(PeerJobTypeEnum.PEER_FULL_STACK, PeerJobTypeEnum.WRAPPER))
+println(resolveSubJobNames(PeerJobType.PEER_FULL_STACK, PeerJobType.WRAPPER))
 
-println(resolveSubJobName(PeerJobTypeEnum.UPDATE_FARGATE_CLUSTER, PeerJobTypeEnum.WRAPPER))
+println(resolveSubJobNames(PeerJobType.UPDATE_FARGATE_CLUSTER, PeerJobType.WRAPPER))
+def jobResult = resolveSubJobNames(PeerJobType.PEER_FULL_STACK, PeerJobType.UPDATE_FARGATE_CLUSTER)
 
-println(resolveSubJobName(PeerJobTypeEnum.PEER_FULL_STACK, PeerJobTypeEnum.UPDATE_FARGATE_CLUSTER))
+if (!jobResult) {
+    println('Job type not currently supported.')
+}
+else {
+    println("Sub Job is: ${jobResult}")
+}
