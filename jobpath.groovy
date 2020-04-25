@@ -1,7 +1,7 @@
 #!groovy
 
-private List<String> resolveSubJobNames(Enum jobTypeToCall, Enum currentJobType) {
-    switch (currentJobType) {
+private List<String> resolveSubJobNames(Enum jobTypeToCall, Enum originatingJobType) {
+    switch (originatingJobType) {
         case PeerJobType.WRAPPER:
             switch (jobTypeToCall) {
                 case PeerJobType.PEER_TWISTLOCK_BUILD: 
@@ -10,53 +10,35 @@ private List<String> resolveSubJobNames(Enum jobTypeToCall, Enum currentJobType)
                     return ["full-peer-stack-controller"]
                 case PeerJobType.CDN:
                     return ["Publish_JavaScript","Invalidate-CloudFront-Cache"]
-                case PeerJobType.ECR_STACK_CONTROLLER:
+                case PeerJobType.OPS_DEV_ECR_STACK_CONTROLLER:
                     return []
+                case PeerJobType.ECR_STACK_CONTROLLER:
+                    return ['']
                 case PeerJobType.UPDATE_FARGATE_CLUSTER:
                     return ["update-fargate-cluster"]
                 case PeerJobType.UPDATE_FARGATE_SERVICE:
                     return ["update-fargate-service"]
-                
+                case PeerJobType.FARGATE_CLUSTER_STACK_CONTROLLER:
+                    return []
+                case PeerJobType.FARGATE_SERVICE_STACK_CONTROLLER:
+                    return []
+                case PeerJobType.DATABASE_STACK:
+                    return []
+                case PeerJobType.DATABASE_SCHEMA:
+                    return []
+
                 default: return []
             }
         default: return []
     }
 }
 
-List<String> resolveFullJobToCallPath(Enum jobTypeToCall, Enum currentJobType, String envType) {
+List<String> resolveFullJobToCallPath(Enum jobTypeToCall, Enum originatingJobType, String envType) {
     // def currentJobName = ${env.JOB_NAME}
 
-    switch (jobTypeToCall) {
-        case ~/.*create_ECR.*/:
-        case ~/.*ecr-stack-controller.*/:
-            println("run ecr job")
-
-        case ~/.*create_fargate_cluster.*/:
-        case ~/.*.*/:
+    switch (envType) {
         
-        case ~/.*.*/:
-        case ~/.*.*/:
-        
-        case ~/.*.*/:
-        case ~/.*.*/:
-        
-        case ~/.*.*/:
-        case ~/.*.*/:
-        
-        case ~/.*.*/:
-        case ~/.*.*/:
-        
-        case ~/.*.*/:
-        case ~/.*.*/:
-        
-        case ~/.*.*/:
-        case ~/.*.*/:
-                
-        default:
-            error("Could not resolve Peer job type.")
     }
-    def jobToCall = ""
-    def jobPathToCall = ""
     
 }
 
@@ -91,7 +73,7 @@ catch (ex) {
 println(resolveSubJobNames(PeerJobType.PEER_FULL_STACK, PeerJobType.WRAPPER))
 
 println(resolveSubJobNames(PeerJobType.UPDATE_FARGATE_CLUSTER, PeerJobType.WRAPPER))
-def jobResult = resolveSubJobNames(PeerJobType.PEER_FULL_STACK, PeerJobType.UPDATE_FARGATE_CLUSTER)
+def jobResult = resolveSubJobNames(PeerJobType.DATABASE_SCHEMA, PeerJobType.WRAPPER)
 
 if (!jobResult) {
     println('Job type not currently supported.')
