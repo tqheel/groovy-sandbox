@@ -13,7 +13,7 @@ private List<String> resolveSubJobNames(Enum jobTypeToCall, Enum originatingJobT
                 case PeerJobType.OPS_DEV_ECR_STACK_CONTROLLER:
                     return []
                 case PeerJobType.ECR_STACK_CONTROLLER:
-                    return ['']
+                    return []
                 case PeerJobType.UPDATE_FARGATE_CLUSTER:
                     return ["update-fargate-cluster"]
                 case PeerJobType.UPDATE_FARGATE_SERVICE:
@@ -35,9 +35,18 @@ private List<String> resolveSubJobNames(Enum jobTypeToCall, Enum originatingJobT
 
 List<String> resolveFullJobToCallPath(Enum jobTypeToCall, Enum originatingJobType, String envType) {
     // def currentJobName = ${env.JOB_NAME}
+    String pathToJob = (envType.equalsIgnoreCase('prod')) ? 'Prod/US' : 'Dev' 
 
-    switch (envType) {
+    switch (originatingJobType) {
+        case PeerJobType.WRAPPER:
+        pathToJob = "${pathToJob}/Radix"
+            switch(jobTypeToCall) {
+                case PeerJobType.CDN:
+                    pathToJob = "${pathToJob}/static-resources"
+                    return ["${pathToJob}/"]
+            }
         
+        default: return []
     }
     
 }
