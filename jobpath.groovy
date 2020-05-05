@@ -1,5 +1,6 @@
 #!groovy
 
+
 private List<String> resolveSubJobNames(Enum jobTypeToCall, Enum originatingJobType) {
     switch (originatingJobType) {
         case PeerJobType.WRAPPER:
@@ -34,8 +35,9 @@ private List<String> resolveSubJobNames(Enum jobTypeToCall, Enum originatingJobT
 }
 
 List<String> resolveFullJobToCallPath(Enum jobTypeToCall, Enum originatingJobType, String envType) {
-    // def currentJobName = ${env.JOB_NAME}
+
     String pathToJob = (envType.equalsIgnoreCase('prod')) ? 'Prod/US' : 'Dev' 
+    String branch = "master"
 
     switch (originatingJobType) {
         case PeerJobType.WRAPPER:
@@ -43,13 +45,19 @@ List<String> resolveFullJobToCallPath(Enum jobTypeToCall, Enum originatingJobTyp
             switch(jobTypeToCall) {
                 case PeerJobType.CDN:
                     pathToJob = "${pathToJob}/static-resources"
-                    return ["${pathToJob}/"]
+                    return  ["${pathToJob}/${resolveSubJobNames(jobTypeToCall, originatingJobType)[0]}/${branch}",
+                            "${pathToJob}/${resolveSubJobNames(jobTypeToCall, originatingJobType)[1]}/${branch}"]
+                default:
+                    pathToJob = "${pathToJob}/peers"
+                    return ["${pathToJob}/${resolveSubJobNames(jobTypeToCall, originatingJobType)[0]}/${branch}"]
             }
         
         default: return []
     }
     
 }
+
+
 
 enum PeerJobType {
     WRAPPER,
@@ -90,3 +98,11 @@ if (!jobResult) {
 else {
     println("Sub Job is: ${jobResult}")
 }
+
+def pathResultCdnDev = resolveFullJobToCallPath(PeerJobType.CDN, PeerJobType.WRAPPER, "dev")
+
+println(pathResultCdnDev)
+
+def pathResultCdnProd = resolveFullJobToCallPath(PeerJobType.CDN, PeerJobType.WRAPPER, "prod")
+
+println(pathResultCdnProd)
